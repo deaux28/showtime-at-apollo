@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q2 2026 Hardware Performance Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #1e293b; --card2: #263148;
+      --border: #334155; --text: #e2e8f0; --muted: #94a3b8;
+      --blue: #3b82f6; --green: #22c55e; --yellow: #eab308;
+      --orange: #f97316; --red: #ef4444; --purple: #a855f7;
+      --cyan: #06b6d4; --teal: #14b8a6; --pink: #ec4899; --lime: #84cc16;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; }
+    /* HEADER */
+    header { background: #0d1526; border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.02em; color: #f1f5f9; }
+    header .meta { color: var(--muted); font-size: 0.8rem; }
+    .badge { background: #1d4ed8; color: #bfdbfe; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
+    /* KPI ROW */
+    .kpi-row { display: flex; gap: 12px; padding: 16px 24px; background: #0d1526; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; min-width: 160px; flex: 1; }
+    .kpi label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+    .kpi .val { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+    .kpi .sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+    .kpi.green .val { color: var(--green); }
+    .kpi.yellow .val { color: var(--yellow); }
+    .kpi.blue .val { color: var(--blue); }
+    .kpi.red .val { color: var(--red); }
+    /* TABS */
+    nav.tabs { display: flex; gap: 0; padding: 0 24px; background: #0d1526; border-bottom: 1px solid var(--border); }
+    .tab-btn { background: none; border: none; color: var(--muted); padding: 12px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    /* MODULES */
+    .module { display: none; padding: 20px 24px; }
+    .module.active { display: block; }
+    /* CHARTS */
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+    .chart-card canvas { max-height: 280px; }
+    /* TABLES */
+    .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 16px; }
+    .table-wrap h3 { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #162033; color: var(--muted); padding: 9px 14px; text-align: right; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    th:first-child { text-align: left; }
+    td { padding: 8px 14px; text-align: right; border-bottom: 1px solid #1e2d40; font-size: 0.8rem; white-space: nowrap; }
+    td:first-child { text-align: left; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1a2840; }
+    /* VARIANCE COLORS */
+    .pos { color: var(--green); }
+    .neg { color: var(--red); }
+    .neutral { color: var(--muted); }
+    /* WOS BADGES */
+    .wos-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
+    .wos-critical  { background: #7f1d1d; color: #fca5a5; }
+    .wos-low       { background: #14532d; color: #86efac; }
+    .wos-healthy   { background: #064e3b; color: #6ee7b7; }
+    .wos-elevated  { background: #713f12; color: #fde68a; }
+    .wos-high      { background: #7c2d12; color: #fdba74; }
+    .wos-extreme   { background: #4c1d95; color: #ddd6fe; }
+    /* FILTERS */
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    .filter-bar label { color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .filter-bar select { background: var(--card2); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .filter-bar .clear-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
+    .filter-bar .clear-btn:hover { border-color: var(--blue); color: var(--blue); }
+    /* ALERT BAR */
+    .alert-bar { background: #3b0a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 10px 16px; margin-bottom: 14px; font-size: 0.78rem; color: #fca5a5; }
+    .alert-bar strong { color: #f87171; }
+    /* SECTION NOTES */
+    .note { color: var(--muted); font-size: 0.72rem; margin-top: 8px; font-style: italic; padding: 0 4px; }
+    /* SUMMARY STAT ROW */
+    .stat-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .stat-mini { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; flex: 1; min-width: 130px; }
+    .stat-mini .sl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-mini .sv { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+    @media (max-width: 800px) { .chart-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Hardware Performance Dashboard<span class="badge">Q2 2026</span></h1>
+  </div>
+  <span class="meta">As of April 23, 2026 &nbsp;·&nbsp; Sources: fct_registrations · v2 Hardware Sales &amp; Forecast · Bomisco POS</span>
+</header>
+
+<!-- KPI STRIP -->
+<div class="kpi-row">
+  <div class="kpi blue">
+    <label>MTD Revenue</label>
+    <div class="val">$3.44M</div>
+    <div class="sub">April 2026 (23 of 30 days)</div>
+  </div>
+  <div class="kpi green">
+    <label>vs April OPlan Pace</label>
+    <div class="val">99.6%</div>
+    <div class="sub">Expected $3.45M · On track</div>
+  </div>
+  <div class="kpi">
+    <label>April OPlan</label>
+    <div class="val" style="color:#94a3b8">$4.50M</div>
+    <div class="sub">Full month target</div>
+  </div>
+  <div class="kpi">
+    <label>Q2 OPlan</label>
+    <div class="val" style="color:#94a3b8">$17.2M</div>
+    <div class="sub">Committed: $18.0M (+4.9%)</div>
+  </div>
+  <div class="kpi yellow">
+    <label>Open Order Backlog</label>
+    <div class="val">$1.15M</div>
+    <div class="sub">April unfulfilled orders</div>
+  </div>
+  <div class="kpi">
+    <label>QTD Registrations</label>
+    <div class="val" style="color:#a855f7">11,120</div>
+    <div class="sub">Units · Apr 6–20 (3 wks)</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<nav class="tabs">
+  <button class="tab-btn active" onclick="switchTab('reg', this)">Registration Performance</button>
+  <button class="tab-btn" onclick="switchTab('rev', this)">Revenue vs Plan</button>
+  <button class="tab-btn" onclick="switchTab('inv', this)">Channel Inventory</button>
+</nav>
+
+<!-- ============================================================ -->
+<!-- MODULE 1: REGISTRATION PERFORMANCE                           -->
+<!-- ============================================================ -->
+<section id="tab-reg" class="module active">
+
+  <div class="stat-row">
+    <div class="stat-mini">
+      <div class="sl">Apr 6 Regs (units)</div>
+      <div class="sv" style="color:var(--blue)">4,479</div>
+    </div>
+    <div class="stat-mini">
+      <div class="sl">Apr 13 Regs (units)</div>
+      <div class="sv" style="color:var(--blue)">4,439</div>
+    </div>
+    <div class="stat-mini">
+      <div class="sl">Apr 20 Regs (partial)</div>
+      <div class="sv" style="color:var(--yellow)">2,202</div>
+    </div>
+    <div class="stat-mini">
+      <div class="sl">2-Wk Avg Full Weeks</div>
+      <div class="sv" style="color:var(--green)">4,459 / wk</div>
+    </div>
+    <div class="stat-mini">
+      <div class="sl">Apr 6 Reg Dollars</div>
+      <div class="sv" style="color:var(--blue)">$1.91M</div>
+    </div>
+    <div class="stat-mini">
+      <div class="sl">Apr 13 Reg Dollars</div>
+      <div class="sv" style="color:var(--blue)">$1.88M</div>
+    </div>
+    <div class="stat-mini">
+      <div class="sl">OPlan Weekly Pace</div>
+      <div class="sv" style="color:var(--muted)">$1.12M / wk</div>
+    </div>
+    <div class="stat-mini">
+      <div class="sl">Reg vs OPlan Pace</div>
+      <div class="sv" style="color:var(--green)">+70%</div>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>Weekly Registrations — Units by Product Line</h3>
+      <canvas id="regUnitsChart"></canvas>
+      <div class="note">† Mar 30 = Q1 context week. * Apr 20 = partial week (Mon–Wed only).</div>
+    </div>
+    <div class="chart-card">
+      <h3>Weekly Reg Dollars vs OPlan Sell-In Pace</h3>
+      <canvas id="regDollarsChart"></canvas>
+      <div class="note">OPlan pace = April sell-in plan ÷ 4 weeks. Registrations measure end-user activations, which can exceed sell-in pace when channel inventory depletes.</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <h3>QTD Registration Summary by Product Line — Apr 6 through Apr 20</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Product Line</th>
+          <th>Apr 6 Units</th>
+          <th>Apr 13 Units</th>
+          <th>Apr 20 Units*</th>
+          <th>QTD Units</th>
+          <th>Apr 6 Dollars</th>
+          <th>Apr 13 Dollars</th>
+          <th>Apr 20 Dollars*</th>
+          <th>QTD Dollars</th>
+        </tr>
+      </thead>
+      <tbody id="regTableBody"></tbody>
+      <tfoot id="regTableFoot"></tfoot>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- MODULE 2: REVENUE VS PLAN                                     -->
+<!-- ============================================================ -->
+<section id="tab-rev" class="module">
+
+  <div class="chart-row">
+    <div class="chart-card full">
+      <h3>Q2 2026 Total Revenue — Actual vs OPlan vs Committed Forecast (by Month)</h3>
+      <canvas id="revMonthChart" style="max-height:260px"></canvas>
+      <div class="note">May and June actuals = $0 (future months). Committed Forecast and OPlan shown for full quarter planning context.</div>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card full">
+      <h3>April 2026 — Actual vs OPlan by Product Line</h3>
+      <canvas id="revLineChart" style="max-height:260px"></canvas>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <h3>April 2026 Product Line Variance Detail</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Product Line</th>
+          <th>Actual Revenue</th>
+          <th>April OPlan</th>
+          <th>Committed Fcst</th>
+          <th>$ Var vs OPlan</th>
+          <th>% Var vs OPlan</th>
+          <th>% of OPlan</th>
+        </tr>
+      </thead>
+      <tbody id="revTableBody"></tbody>
+      <tfoot id="revTableFoot"></tfoot>
+    </table>
+  </div>
+
+  <div class="table-wrap" style="margin-top:16px">
+    <h3>Q2 2026 Full-Quarter Plan Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Actual Revenue</th>
+          <th>OPlan</th>
+          <th>Committed Forecast</th>
+          <th>vs OPlan $</th>
+          <th>vs OPlan %</th>
+        </tr>
+      </thead>
+      <tbody id="q2SummaryBody"></tbody>
+      <tfoot id="q2SummaryFoot"></tfoot>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- MODULE 3: CHANNEL INVENTORY                                   -->
+<!-- ============================================================ -->
+<section id="tab-inv" class="module">
+
+  <div class="alert-bar">
+    <strong>⚠ Inventory Flags:</strong>
+    Guitar Center AIB (166 wks), Musical Fulfillment Volt (98 wks), Musical Fulfillment AIB (85 wks), Guitar Center Amp Top Box (86 wks), Guitar Center Apollo Desktop (46 wks) — critically overstocked.
+    These levels suggest stock is not turning; confirm Guitar Center data excludes store-level + HQ double-counting per PRD data quality note.
+  </div>
+
+  <div class="filter-bar">
+    <label>Dealer</label>
+    <select id="dealerFilter" onchange="renderInvTable()">
+      <option value="">All Dealers</option>
+    </select>
+    <label>Product Group</label>
+    <select id="groupFilter" onchange="renderInvTable()">
+      <option value="">All Groups</option>
+    </select>
+    <label>WOS Range</label>
+    <select id="wosFilter" onchange="renderInvTable()">
+      <option value="">All</option>
+      <option value="critical">Critical (&lt;4 wks)</option>
+      <option value="healthy">&lt;8 wks</option>
+      <option value="elevated">8–13 wks</option>
+      <option value="high">13–26 wks</option>
+      <option value="extreme">&gt;26 wks (Overstocked)</option>
+    </select>
+    <button class="clear-btn" onclick="clearInvFilters()">Reset</button>
+    <span id="invCount" style="color:var(--muted);font-size:0.75rem;margin-left:auto"></span>
+  </div>
+
+  <div class="table-wrap" style="margin-top:0">
+    <h3>Weeks of Supply by Dealer × Product Group — Trailing 13 Weeks</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Dealer</th>
+          <th>Product Group</th>
+          <th>Avg On-Hand / Wk</th>
+          <th>Avg Sold / Wk</th>
+          <th>WOS</th>
+          <th>Status</th>
+          <th>13-Wk On-Hand Sum</th>
+          <th>13-Wk Qty Sold</th>
+        </tr>
+      </thead>
+      <tbody id="invTableBody"></tbody>
+    </table>
+    <p class="note" style="padding:10px 14px">WOS = avg weekly on-hand ÷ avg weekly sell-through (trailing 13 weeks). Thresholds: &lt;4 wks = Stockout Risk · 4–8 = Healthy · 8–13 = Elevated · 13–26 = High · &gt;26 = Extreme Overstock. Target channel turns: 1× per quarter (13 wks).</p>
+  </div>
+</section>
+
+<script>
+// ================================================================
+// DATA
+// ================================================================
+
+// --- REGISTRATION ---
+const REG_WEEK_LABELS = ['Mar 30†', 'Apr 6', 'Apr 13', 'Apr 20*'];
+const LINE_COLORS = {
+  'Apollo Desktop':   '#3b82f6',
+  'Apollo Rackmount': '#1d4ed8',
+  'Volt Desktop':     '#22c55e',
+  'AIB':              '#a855f7',
+  'Modeling Mics':    '#f59e0b',
+  'GPM':              '#ec4899',
+  'UAD':              '#06b6d4',
+  'GPS':              '#14b8a6',
+  'Amp Top Box':      '#f97316',
+  'Analog Mics':      '#84cc16',
+};
+const REG_UNITS = {
+  'Apollo Desktop':   [853,  1193, 1224, 579],
+  'Apollo Rackmount': [197,  245,  235,  128],
+  'Volt Desktop':     [1358, 1979, 1984, 990],
+  'AIB':              [285,  430,  387,  210],
+  'Modeling Mics':    [110,  171,  191,  89],
+  'GPM':              [134,  221,  200,  109],
+  'UAD':              [81,   124,  112,  47],
+  'GPS':              [47,   66,   62,   27],
+  'Amp Top Box':      [9,    17,   17,   8],
+  'Analog Mics':      [2,    2,    0,    2],
+};
+const REG_DOLLARS = {
+  'Apollo Desktop':   [616256,  841532,  851951,  407284],
+  'Apollo Rackmount': [350275,  424093,  391792,  231046],
+  'Volt Desktop':     [222274,  319100,  333277,  162290],
+  'AIB':              [76769,   116709,  104515,  56610],
+  'Modeling Mics':    [33855,   73006,   78265,   33024],
+  'GPM':              [35615,   59474,   53214,   28880],
+  'UAD':              [34131,   51849,   47026,   20955],
+  'GPS':              [5252,    7444,    7040,    2988],
+  'Amp Top Box':      [8791,    16605,   16605,   7814],
+  'Analog Mics':      [1786,    2588,    0,       4894],
+};
+// Q2 only weekly oplan pace (13 weeks: Apr 6 → Jun 29)
+const Q2_WEEKS = ['Apr 6','Apr 13','Apr 20*','Apr 27','May 4','May 11','May 18','May 25','Jun 1','Jun 8','Jun 15','Jun 22','Jun 29'];
+const OPLAN_PACE = [1124679,1124679,1124679,1124679, 1557985,1557985,1557985,1557985, 1285910,1285910,1285910,1285910,1285910];
+const REG_DOLLARS_Q2_ACTUAL = [1912400, 1883685, 954785, null, null, null, null, null, null, null, null, null, null];
+
+// --- REVENUE VS PLAN ---
+const MONTHS = ['Apr 2026','May 2026','Jun 2026'];
+const TOTAL_ACTUAL    = [3435778, 0, 0];
+const TOTAL_OPLAN     = [4498716, 6231939, 6429551];
+const TOTAL_COMMITTED = [4769621, 6143432, 7131785];
+
+const PRODUCT_LINES = [
+  { line:'Apollo Desktop',   actual:1341014, oplan:2017620, committed:1999405, var$:-676606,  varPct:-33.5 },
+  { line:'Apollo Rackmount', actual:620326,  oplan:1276984, committed:968577,  var$:-656657,  varPct:-51.4 },
+  { line:'Volt Desktop',     actual:585864,  oplan:626234,  committed:975161,  var$:-40371,   varPct:-6.4  },
+  { line:'Analog',           actual:232699,  oplan:68517,   committed:167542,  var$:164182,   varPct:239.6 },
+  { line:'Modeling Mics',    actual:190836,  oplan:107211,  committed:217324,  var$:83625,    varPct:78.0  },
+  { line:'AIB',              actual:122044,  oplan:176711,  committed:226195,  var$:-54667,   varPct:-30.9 },
+  { line:'GPM',              actual:100730,  oplan:88710,   committed:73017,   var$:12020,    varPct:13.5  },
+  { line:'GPS',              actual:49554,   oplan:50883,   committed:47083,   var$:-1328,    varPct:-2.6  },
+  { line:'UAD',              actual:45691,   oplan:40061,   committed:44417,   var$:5630,     varPct:14.1  },
+  { line:'Amp Top Box',      actual:12760,   oplan:32732,   committed:31468,   var$:-19973,   varPct:-61.0 },
+  { line:'Analog Mics',      actual:-10284,  oplan:13053,   committed:19432,   var$:-23337,   varPct:-178.8},
+];
+
+const Q2_SUMMARY = [
+  { month:'Apr 2026', actual:3435778, oplan:4498716, committed:4769621 },
+  { month:'May 2026', actual:0,       oplan:6231939, committed:6143432 },
+  { month:'Jun 2026', actual:0,       oplan:6429551, committed:7131785 },
+];
+
+// --- INVENTORY ---
+const INVENTORY = [
+  {dealer:'Guitar Center',       group:'Volt',             oh:68020,qty:3132},
+  {dealer:'Guitar Center',       group:'Apollo Desktop',   oh:45108,qty:983},
+  {dealer:'Amazon',              group:'Volt',             oh:26734,qty:1806},
+  {dealer:'Musical Fulfillment', group:'Volt',             oh:20808,qty:212},
+  {dealer:'Sweetwater',          group:'Apollo Desktop',   oh:15645,qty:1073},
+  {dealer:'Guitar Center',       group:'AIB',              oh:14122,qty:85},
+  {dealer:'Amazon',              group:'Apollo Desktop',   oh:13241,qty:649},
+  {dealer:'Sweetwater',          group:'Apollo Rackmount', oh:9081, qty:512},
+  {dealer:'Musical Fulfillment', group:'Apollo Desktop',   oh:8703, qty:307},
+  {dealer:'Amazon',              group:'AIB',              oh:7850, qty:208},
+  {dealer:'Sweetwater',          group:'Volt',             oh:7016, qty:1327},
+  {dealer:'Guitar Center',       group:'Apollo Rackmount', oh:5466, qty:82},
+  {dealer:'Musical Fulfillment', group:'AIB',              oh:5321, qty:63},
+  {dealer:'Amazon',              group:'GPS',              oh:3817, qty:212},
+  {dealer:"Musician's Friend",   group:'GPS',              oh:3439, qty:25},
+  {dealer:'Sweetwater',          group:'Modeling Mics',    oh:3433, qty:357},
+  {dealer:'Amazon',              group:'GPM',              oh:3294, qty:101},
+  {dealer:'Amazon',              group:'Modeling Mics',    oh:3272, qty:237},
+  {dealer:'Sweetwater',          group:'GPS',              oh:3076, qty:403},
+  {dealer:'Sweetwater',          group:'AIB',              oh:2596, qty:310},
+  {dealer:'Musical Fulfillment', group:'GPS',              oh:2523, qty:18},
+  {dealer:'Musical Fulfillment', group:'Modeling Mics',    oh:2496, qty:32},
+  {dealer:'Guitar Center',       group:'Modeling Mics',    oh:2393, qty:31},
+  {dealer:'Amazon Europe',       group:'Volt',             oh:2182, qty:81},
+  {dealer:'Musical Fulfillment', group:'GPM',              oh:1990, qty:26},
+  {dealer:'Guitar Center',       group:'Analog',           oh:1977, qty:9},
+  {dealer:"Musician's Friend",   group:'Apollo Desktop',   oh:1956, qty:238},
+  {dealer:'Guitar Center',       group:'Amp Top Box',      oh:1712, qty:20},
+  {dealer:'Sweetwater',          group:'Accessories',      oh:1688, qty:372},
+  {dealer:"Musician's Friend",   group:'Volt',             oh:1674, qty:268},
+  {dealer:"Musician's Friend",   group:'AIB',              oh:1566, qty:48},
+  {dealer:'Guitar Center',       group:'GPM',              oh:1281, qty:18},
+  {dealer:'Sweetwater',          group:'GPM',              oh:1221, qty:161},
+  {dealer:'Sweetwater',          group:'Analog',           oh:1138, qty:129},
+  {dealer:'Musical Fulfillment', group:'Apollo Rackmount', oh:1099, qty:30},
+  {dealer:'Amazon',              group:'Apollo Rackmount', oh:935,  qty:30},
+  {dealer:"Musician's Friend",   group:'Modeling Mics',    oh:669,  qty:72},
+  {dealer:"Musician's Friend",   group:'Apollo Rackmount', oh:653,  qty:72},
+  {dealer:'Amazon',              group:'UAD',              oh:642,  qty:21},
+  {dealer:"Musician's Friend",   group:'GPM',              oh:617,  qty:29},
+  {dealer:'Guitar Center',       group:'GPS',              oh:590,  qty:7},
+  {dealer:'Sweetwater',          group:'Amp Top Box',      oh:553,  qty:32},
+  {dealer:'Sweetwater',          group:'UAD',              oh:544,  qty:57},
+  {dealer:'Amazon',              group:'Amp Top Box',      oh:495,  qty:20},
+  {dealer:'Musical Fulfillment', group:'UAD',              oh:426,  qty:20},
+  {dealer:'Musical Fulfillment', group:'Amp Top Box',      oh:369,  qty:3},
+  {dealer:'Amazon Europe',       group:'AIB',              oh:343,  qty:19},
+  {dealer:'Sweetwater',          group:'Analog Mics',      oh:246,  qty:6},
+  {dealer:"Musician's Friend",   group:'Analog',           oh:189,  qty:32},
+];
+
+// ================================================================
+// HELPERS
+// ================================================================
+const fmt  = n => typeof n === 'number' ? n.toLocaleString('en-US', {maximumFractionDigits:0}) : n;
+const fmtD = n => typeof n === 'number' ? '$' + (Math.abs(n) >= 1e6
+  ? (n/1e6).toFixed(2)+'M'
+  : (Math.abs(n) >= 1e3 ? (n/1e3).toFixed(0)+'K' : n.toFixed(0)))
+  : '$0';
+const fmtFull = n => typeof n === 'number' ? '$' + n.toLocaleString('en-US', {maximumFractionDigits:0}) : '$0';
+
+function wosClass(w) {
+  if (w === Infinity || w > 999) return 'wos-extreme';
+  if (w > 26) return 'wos-extreme';
+  if (w > 13) return 'wos-high';
+  if (w > 8)  return 'wos-elevated';
+  if (w > 4)  return 'wos-healthy';
+  if (w > 0)  return 'wos-low';
+  return 'wos-critical';
+}
+function wosLabel(w) {
+  if (w === Infinity || w > 999) return '∞';
+  return w.toFixed(1);
+}
+function wosStatus(w) {
+  if (w === Infinity || w > 999) return 'No Velocity';
+  if (w > 26) return 'Extreme Overstock';
+  if (w > 13) return 'Overstocked';
+  if (w > 8)  return 'Elevated';
+  if (w > 4)  return 'Healthy';
+  if (w > 0)  return 'Low — Monitor';
+  return 'Stockout Risk';
+}
+
+// ================================================================
+// CHARTS
+// ================================================================
+const CHART_DEFAULTS = {
+  color: '#94a3b8',
+  plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+};
+Chart.defaults.color = '#94a3b8';
+
+// --- REG UNITS (stacked bar) ---
+(function() {
+  const lines = Object.keys(REG_UNITS);
+  const datasets = lines.map(l => ({
+    label: l, data: REG_UNITS[l],
+    backgroundColor: LINE_COLORS[l] + 'cc',
+    borderColor: LINE_COLORS[l],
+    borderWidth: 1, stack: 'u'
+  }));
+  new Chart(document.getElementById('regUnitsChart'), {
+    type: 'bar',
+    data: { labels: REG_WEEK_LABELS, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font:{size:10}, boxWidth:10, padding:8 } } },
+      scales: {
+        x: { stacked:true, grid:{color:'#1e2d40'}, ticks:{color:'#94a3b8'} },
+        y: { stacked:true, grid:{color:'#1e2d40'}, ticks:{color:'#94a3b8', callback: v => fmt(v)} }
+      }
+    }
+  });
+})();
+
+// --- REG DOLLARS vs OPLAN PACE (mixed) ---
+(function() {
+  const actualData = REG_DOLLARS_Q2_ACTUAL;
+  new Chart(document.getElementById('regDollarsChart'), {
+    type: 'bar',
+    data: {
+      labels: Q2_WEEKS,
+      datasets: [
+        {
+          type: 'bar', label: 'Actual Reg Dollars',
+          data: actualData,
+          backgroundColor: ctx => {
+            const v = actualData[ctx.index];
+            if (v == null) return 'transparent';
+            return v >= OPLAN_PACE[ctx.index] ? '#22c55e99' : '#3b82f699';
+          },
+          borderColor: ctx => {
+            const v = actualData[ctx.index];
+            if (v == null) return 'transparent';
+            return v >= OPLAN_PACE[ctx.index] ? '#22c55e' : '#3b82f6';
+          },
+          borderWidth: 1
+        },
+        {
+          type: 'line', label: 'OPlan Weekly Pace',
+          data: OPLAN_PACE,
+          borderColor: '#f97316', borderDash: [4,3], borderWidth: 2,
+          pointRadius: 3, pointBackgroundColor: '#f97316',
+          fill: false, tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position:'bottom', labels:{color:'#94a3b8',font:{size:10},boxWidth:10,padding:8} } },
+      scales: {
+        x: { grid:{color:'#1e2d40'}, ticks:{color:'#94a3b8',font:{size:10}} },
+        y: { grid:{color:'#1e2d40'}, ticks:{color:'#94a3b8', callback: v => '$'+Math.round(v/1e3)+'K'} }
+      }
+    }
+  });
+})();
+
+// --- REV MONTH CHART (grouped bar) ---
+(function() {
+  new Chart(document.getElementById('revMonthChart'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label:'Actual Revenue', data:TOTAL_ACTUAL, backgroundColor:'#3b82f6cc', borderColor:'#3b82f6', borderWidth:1 },
+        { label:'OPlan',          data:TOTAL_OPLAN,  backgroundColor:'#47556944', borderColor:'#64748b', borderWidth:1 },
+        { label:'Committed Fcst', data:TOTAL_COMMITTED, backgroundColor:'#22c55e44', borderColor:'#22c55e', borderWidth:1 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:true,
+      plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11},boxWidth:12,padding:12}}},
+      scales:{
+        x:{grid:{color:'#1e2d40'},ticks:{color:'#94a3b8'}},
+        y:{grid:{color:'#1e2d40'},ticks:{color:'#94a3b8',callback:v=>'$'+Math.round(v/1e6*10)/10+'M'}}
+      }
+    }
+  });
+})();
+
+// --- REV LINE CHART (Apr actual vs OPlan by product line) ---
+(function() {
+  const labels = PRODUCT_LINES.map(d=>d.line);
+  const actuals = PRODUCT_LINES.map(d=>d.actual);
+  const oplans  = PRODUCT_LINES.map(d=>d.oplan);
+  new Chart(document.getElementById('revLineChart'), {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Actual',backgroundColor:'#3b82f6bb',borderColor:'#3b82f6',borderWidth:1,data:actuals},
+        {label:'OPlan', backgroundColor:'#64748b55',borderColor:'#64748b', borderWidth:1,data:oplans},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11},boxWidth:12,padding:12}}},
+      scales:{
+        x:{grid:{color:'#1e2d40'},ticks:{color:'#94a3b8',font:{size:10}}},
+        y:{grid:{color:'#1e2d40'},ticks:{color:'#94a3b8',callback:v=>'$'+Math.round(v/1e3)+'K'}}
+      }
+    }
+  });
+})();
+
+// ================================================================
+// TABLES
+// ================================================================
+
+// Registration table
+(function() {
+  const lines = Object.keys(REG_UNITS);
+  const tbody = document.getElementById('regTableBody');
+  const tfoot = document.getElementById('regTableFoot');
+  let totU=[0,0,0,0], totD=[0,0,0,0];
+
+  lines.forEach(l => {
+    const u = REG_UNITS[l], d = REG_DOLLARS[l];
+    const qtdU = u[1]+u[2]+u[3], qtdD = d[1]+d[2]+d[3];
+    for(let i=0;i<4;i++){totU[i]+=u[i];totD[i]+=d[i];}
+    tbody.innerHTML += `<tr>
+      <td>${l}</td>
+      <td>${fmt(u[1])}</td><td>${fmt(u[2])}</td><td>${fmt(u[3])}</td>
+      <td><strong>${fmt(qtdU)}</strong></td>
+      <td>${fmtD(d[1])}</td><td>${fmtD(d[2])}</td><td>${fmtD(d[3])}</td>
+      <td><strong>${fmtD(qtdD)}</strong></td>
+    </tr>`;
+  });
+
+  const qtdUTot = totU[1]+totU[2]+totU[3];
+  const qtdDTot = totD[1]+totD[2]+totD[3];
+  tfoot.innerHTML = `<tr style="background:#162033;font-weight:700">
+    <td>TOTAL</td>
+    <td>${fmt(totU[1])}</td><td>${fmt(totU[2])}</td><td>${fmt(totU[3])}</td>
+    <td>${fmt(qtdUTot)}</td>
+    <td>${fmtD(totD[1])}</td><td>${fmtD(totD[2])}</td><td>${fmtD(totD[3])}</td>
+    <td>${fmtD(qtdDTot)}</td>
+  </tr>`;
+})();
+
+// Revenue variance table (April)
+(function() {
+  const tbody = document.getElementById('revTableBody');
+  const tfoot = document.getElementById('revTableFoot');
+  let tA=0, tO=0, tC=0, tV=0;
+
+  PRODUCT_LINES.forEach(d => {
+    tA+=d.actual; tO+=d.oplan; tC+=d.committed; tV+=d.var$;
+    const pct = d.actual > 0 && d.oplan > 0 ? (d.actual/d.oplan*100).toFixed(0) : '—';
+    const varCls = d.var$ >= 0 ? 'pos' : 'neg';
+    const varSign = d.var$ >= 0 ? '+' : '';
+    tbody.innerHTML += `<tr>
+      <td>${d.line}</td>
+      <td>${fmtFull(d.actual)}</td>
+      <td>${fmtFull(d.oplan)}</td>
+      <td>${fmtFull(d.committed)}</td>
+      <td class="${varCls}">${varSign}${fmtFull(d.var$)}</td>
+      <td class="${varCls}">${varSign}${d.varPct.toFixed(1)}%</td>
+      <td>${pct !== '—' ? pct+'%' : '—'}</td>
+    </tr>`;
+  });
+
+  const tVPct = ((tA/tO-1)*100).toFixed(1);
+  const tPctOfO = (tA/tO*100).toFixed(0);
+  tfoot.innerHTML = `<tr style="background:#162033;font-weight:700">
+    <td>TOTAL</td>
+    <td>${fmtFull(tA)}</td><td>${fmtFull(tO)}</td><td>${fmtFull(tC)}</td>
+    <td class="${tV>=0?'pos':'neg'}">${tV>=0?'+':''}${fmtFull(tV)}</td>
+    <td class="${tV>=0?'pos':'neg'}">${tVPct}%</td>
+    <td>${tPctOfO}%</td>
+  </tr>`;
+})();
+
+// Q2 Summary table
+(function(){
+  const tbody = document.getElementById('q2SummaryBody');
+  const tfoot = document.getElementById('q2SummaryFoot');
+  let tA=0,tO=0,tC=0;
+  Q2_SUMMARY.forEach(d=>{
+    tA+=d.actual;tO+=d.oplan;tC+=d.committed;
+    const v=d.actual-d.oplan;
+    const vp=d.oplan>0?((d.actual/d.oplan-1)*100).toFixed(1):null;
+    const cls=d.actual>0?(v>=0?'pos':'neg'):'neutral';
+    tbody.innerHTML+=`<tr>
+      <td>${d.month}</td>
+      <td>${d.actual>0?fmtFull(d.actual):'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${fmtFull(d.oplan)}</td>
+      <td>${fmtFull(d.committed)}</td>
+      <td class="${cls}">${d.actual>0?(v>=0?'+':'')+fmtFull(v):'<span class="neutral">pending</span>'}</td>
+      <td class="${cls}">${vp!==null?vp+'%':'<span class="neutral">—</span>'}</td>
+    </tr>`;
+  });
+  const tv=tA-tO;
+  tfoot.innerHTML=`<tr style="background:#162033;font-weight:700">
+    <td>Q2 TOTAL</td>
+    <td>${fmtFull(tA)}</td><td>${fmtFull(tO)}</td><td>${fmtFull(tC)}</td>
+    <td class="${tv>=0?'pos':'neg'}">${fmtFull(tv)}</td>
+    <td class="${tv>=0?'pos':'neg'}">${((tA/tO-1)*100).toFixed(1)}%</td>
+  </tr>`;
+})();
+
+// ================================================================
+// INVENTORY TABLE
+// ================================================================
+const allDealers = [...new Set(INVENTORY.map(d=>d.dealer))].sort();
+const allGroups  = [...new Set(INVENTORY.map(d=>d.group))].sort();
+
+(function populateFilters(){
+  const ds = document.getElementById('dealerFilter');
+  const gs = document.getElementById('groupFilter');
+  allDealers.forEach(d=>{ const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o); });
+  allGroups.forEach(g=>{  const o=document.createElement('option');o.value=g;o.textContent=g;gs.appendChild(o); });
+})();
+
+function clearInvFilters(){
+  document.getElementById('dealerFilter').value='';
+  document.getElementById('groupFilter').value='';
+  document.getElementById('wosFilter').value='';
+  renderInvTable();
+}
+
+function renderInvTable(){
+  const df = document.getElementById('dealerFilter').value;
+  const gf = document.getElementById('groupFilter').value;
+  const wf = document.getElementById('wosFilter').value;
+  const tbody = document.getElementById('invTableBody');
+
+  let rows = INVENTORY.map(d => {
+    const wos = d.qty > 0 ? d.oh/d.qty : Infinity;
+    return {...d, wos};
+  });
+
+  if(df) rows = rows.filter(r=>r.dealer===df);
+  if(gf) rows = rows.filter(r=>r.group===gf);
+  if(wf){
+    if(wf==='critical') rows=rows.filter(r=>r.wos<4);
+    else if(wf==='healthy') rows=rows.filter(r=>r.wos<=8&&r.wos>0);
+    else if(wf==='elevated') rows=rows.filter(r=>r.wos>8&&r.wos<=13);
+    else if(wf==='high') rows=rows.filter(r=>r.wos>13&&r.wos<=26);
+    else if(wf==='extreme') rows=rows.filter(r=>r.wos>26);
+  }
+
+  rows.sort((a,b)=>b.wos-a.wos);
+  document.getElementById('invCount').textContent = rows.length+' records';
+
+  tbody.innerHTML = rows.map(r=>{
+    const avgOH = (r.oh/13).toFixed(1);
+    const avgQty = (r.qty/13).toFixed(1);
+    const ws = r.wos;
+    const wClass = wosClass(ws);
+    return `<tr>
+      <td>${r.dealer}</td>
+      <td>${r.group}</td>
+      <td>${fmt(Math.round(r.oh/13))}</td>
+      <td>${fmt(Math.round(r.qty/13))}</td>
+      <td><span class="wos-badge ${wClass}">${wosLabel(ws)}</span></td>
+      <td>${wosStatus(ws)}</td>
+      <td>${fmt(r.oh)}</td>
+      <td>${fmt(r.qty)}</td>
+    </tr>`;
+  }).join('');
+}
+
+renderInvTable();
+
+// ================================================================
+// TAB SWITCHING
+// ================================================================
+function switchTab(name, btn){
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
