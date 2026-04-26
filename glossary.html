@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glossary & Reference — Showtime at Apollo</title>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #263148;
+    --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --faint: #475569;
+    --blue: #3b82f6; --green: #22c55e; --yellow: #eab308;
+    --orange: #f97316; --red: #ef4444; --purple: #a855f7;
+    --cyan: #06b6d4; --teal: #14b8a6; --pink: #ec4899;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13.5px; line-height: 1.6; }
+
+  /* ── HEADER ── */
+  header { background: #0d1526; border-bottom: 2px solid var(--border); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  header h1 { font-size: 1.1rem; font-weight: 700; color: #f1f5f9; letter-spacing: 0.01em; }
+  header p { font-size: 0.77rem; color: var(--muted); margin-top: 3px; }
+
+  /* ── NAV ── */
+  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.8rem; font-weight: 500; padding: 11px 16px; border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+  nav a:hover { color: var(--text); border-bottom-color: var(--blue); }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 1200px; margin: 0 auto; padding: 32px 28px 64px; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 48px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .section-icon { font-size: 1.1rem; }
+  .section-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; }
+  .section-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── GLOSSARY ENTRIES ── */
+  .glossary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 780px) { .glossary-grid { grid-template-columns: 1fr; } }
+
+  .entry { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; }
+  .entry-term { font-size: 0.85rem; font-weight: 700; color: var(--blue); font-family: 'SF Mono','Fira Code',monospace; margin-bottom: 4px; }
+  .entry-full { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; font-style: italic; }
+  .entry-def { font-size: 0.82rem; color: var(--text); line-height: 1.55; }
+  .entry-note { font-size: 0.75rem; color: var(--faint); margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; }
+  .entry-formula { font-family: 'SF Mono','Fira Code',monospace; font-size: 0.75rem; background: var(--surface2); color: var(--cyan); padding: 4px 8px; border-radius: 4px; margin-top: 6px; display: inline-block; }
+
+  /* ── REFERENCE TABLES ── */
+  .ref-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+  .ref-table th { background: #0f172a; color: var(--muted); padding: 9px 14px; text-align: left; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 2px solid var(--border); }
+  .ref-table td { padding: 8px 14px; border-bottom: 1px solid #1a2840; font-size: 0.82rem; vertical-align: top; }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table tr:hover td { background: rgba(255,255,255,0.025); }
+
+  /* ── BADGES ── */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+  .badge-green  { background: #14532d; color: #86efac; }
+  .badge-yellow { background: #713f12; color: #fde68a; }
+  .badge-orange { background: #7c2d12; color: #fdba74; }
+  .badge-red    { background: #7f1d1d; color: #fca5a5; }
+  .badge-purple { background: #4c1d95; color: #ddd6fe; }
+  .badge-blue   { background: #1e3a5f; color: #93c5fd; }
+  .badge-gray   { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .badge-teal   { background: #164e63; color: #67e8f9; }
+  .badge-pink   { background: #831843; color: #fbcfe8; }
+  .badge-amber  { background: #78350f; color: #fde68a; }
+
+  /* ── COLOR SWATCH ── */
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: middle; flex-shrink: 0; }
+
+  /* ── PATTERN LEGEND GRID ── */
+  .pattern-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 780px) { .pattern-grid { grid-template-columns: 1fr; } }
+  .pat-card { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid; border-radius: 8px; padding: 12px 16px; }
+  .pat-card .pat-label { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
+  .pat-card .pat-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
+  .pat-card .pat-count { font-size: 0.7rem; color: var(--faint); margin-top: 6px; }
+
+  /* ── TERRITORY COLUMNS ── */
+  .territory-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 780px) { .territory-cols { grid-template-columns: 1fr; } }
+  .ter-group { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .ter-group h4 { font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .ter-group ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .ter-group li { font-size: 0.79rem; display: flex; align-items: flex-start; gap: 6px; }
+  .ter-code { font-family: 'SF Mono','Fira Code',monospace; color: var(--cyan); min-width: 160px; font-size: 0.77rem; }
+  .ter-name { color: var(--muted); font-size: 0.75rem; }
+
+  /* ── SOURCE CHIPS ── */
+  .source-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+  .chip-icon { font-size: 0.9rem; }
+  .chip-name { font-weight: 700; color: var(--text); }
+  .chip-desc { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── ANOMALY BOX ── */
+  .anomaly-box { background: #3b0a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 14px 18px; margin-top: 16px; }
+  .anomaly-box h4 { color: #fca5a5; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .anomaly-items { display: flex; flex-direction: column; gap: 5px; }
+  .anomaly-item { font-size: 0.79rem; color: #fca5a5; }
+
+  /* ── INLINE CODE ── */
+  code { font-family: 'SF Mono','Fira Code',monospace; font-size: 0.78rem; background: var(--surface2); color: var(--cyan); padding: 1px 5px; border-radius: 3px; }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px; }
+
+  /* ── BACK LINK ── */
+  .back-row { margin-bottom: 24px; }
+  .back-link { color: var(--blue); text-decoration: none; font-size: 0.82rem; }
+  .back-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📖 Glossary & Reference Charts</h1>
+    <p>Showtime at Apollo · Q2 2026 · All terms, metrics, and field definitions across all dashboards</p>
+  </div>
+  <a href="index.html" style="color:var(--muted);font-size:0.8rem;text-decoration:none;">← Back to Index</a>
+</header>
+
+<nav>
+  <a href="#metrics">Key Metrics</a>
+  <a href="#wos">WOS Thresholds</a>
+  <a href="#product-lines">Product Lines</a>
+  <a href="#territories">Territories & Regions</a>
+  <a href="#product-id">Product ID Patterns</a>
+  <a href="#dealers">Dealers & AI Levels</a>
+  <a href="#anomalies">Active Anomalies</a>
+  <a href="#sources">Data Sources</a>
+</nav>
+
+<div class="page">
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 1. KEY METRICS                               -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="metrics">
+    <div class="section-header">
+      <span class="section-icon">📐</span>
+      <div>
+        <div class="section-title">Key Metrics & Terminology</div>
+        <div class="section-desc">Definitions for every metric, acronym, and calculation used across the dashboards</div>
+      </div>
+    </div>
+
+    <div class="glossary-grid">
+
+      <div class="entry">
+        <div class="entry-term">MTD</div>
+        <div class="entry-full">Month-to-Date</div>
+        <div class="entry-def">Revenue or units accumulated from the first calendar day of the current month through the most recent reported date. Used in the KPI strip on the HW Performance Dashboard (e.g., "April MTD Revenue: $3.44M as of April 23").</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">QTD</div>
+        <div class="entry-full">Quarter-to-Date</div>
+        <div class="entry-def">Registrations or revenue accumulated from the first day of the current fiscal quarter through the latest reported week. Q2 2026 begins April 6; QTD registration weeks are Apr 6, Apr 13, and Apr 20 (partial).</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">OPlan</div>
+        <div class="entry-full">Operating Plan</div>
+        <div class="entry-def">The internally committed revenue target set at the start of the fiscal period. OPlan is the primary benchmark for evaluating actual performance. April OPlan = $4.50M; Q2 OPlan = $17.2M.</div>
+        <div class="entry-note">Distinct from Committed Forecast, which is updated in-quarter by the field.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Committed Forecast</div>
+        <div class="entry-full">Also: Committed Fcst</div>
+        <div class="entry-def">A field-updated revenue forecast, typically revised monthly. Reflects the sales team's current expectation for the period. Q2 Committed = $18.0M vs. Q2 OPlan $17.2M (+4.9%).</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Booked USD</div>
+        <div class="entry-full">Booked Revenue (US Dollars)</div>
+        <div class="entry-def">Revenue recognized from confirmed purchase orders or completed transactions, grouped by product group and territory. Shown in the Booked USD Summary dashboard, sourced from the Omni Hardware Sales &amp; Forecast workbook.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Open Order Backlog</div>
+        <div class="entry-full">Unfulfilled Orders</div>
+        <div class="entry-def">The dollar value of orders placed but not yet shipped/fulfilled within the reporting period. April backlog = $1.15M. Backlog can bridge into the next period if fulfilled.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Sell-In</div>
+        <div class="entry-full">Channel Sell-In / Shipments to Trade</div>
+        <div class="entry-def">Revenue from units shipped from Universal Audio to distributors or retailers (the trade channel). OPlan is structured as a sell-in target. Compare to Sell-Through.</div>
+        <div class="entry-formula">Sell-In Pace = Monthly OPlan ÷ 4 weeks</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Sell-Through</div>
+        <div class="entry-full">End-Customer Sell-Through / Registrations</div>
+        <div class="entry-def">Units purchased and activated by end customers (consumers), measured via product registrations. Sell-through can exceed sell-in pace when channel inventory is being depleted.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Registrations</div>
+        <div class="entry-full">End-User Product Registrations (Units)</div>
+        <div class="entry-def">Units activated by end customers through the UA registration system. Sourced from <code>fct_registrations</code>. Used as a proxy for sell-through. Weekly registration data begins April 6 (Q2 week 1); the Mar 30 week is Q1 context only.</div>
+        <div class="entry-note">Partial weeks (e.g., Apr 20 = Mon–Wed only) are flagged with an asterisk (*) in charts.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Reg Dollars (Static ASP)</div>
+        <div class="entry-full">Registration Dollars using Static Average Selling Price</div>
+        <div class="entry-def">A revenue proxy calculated by multiplying registration unit counts by a fixed (static) average selling price per SKU. Not actual booked revenue — used to approximate the dollar value of sell-through activity when invoice data isn't available at the SKU level.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">OPlan Pace</div>
+        <div class="entry-full">OPlan Weekly Pace / OPlan Channel Perpetual (Sell-In)</div>
+        <div class="entry-def">The implied weekly revenue run-rate derived from the monthly OPlan. Used as a benchmark line in the weekly registration dollar charts. Any week where actual Reg Dollars exceeds OPlan Pace is highlighted green.</div>
+        <div class="entry-formula">OPlan Pace = Monthly OPlan ÷ 4 weeks</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">WOS</div>
+        <div class="entry-full">Weeks of Supply</div>
+        <div class="entry-def">A channel inventory health metric. Measures how many weeks of current sell-through velocity is covered by on-hand inventory. Computed over a trailing 13-week window per dealer × product group.</div>
+        <div class="entry-formula">WOS = Avg Weekly On-Hand ÷ Avg Weekly Units Sold</div>
+        <div class="entry-note">Target channel turns: 1× per quarter = 13 weeks of supply.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">Months of Supply</div>
+        <div class="entry-full">MoS — Dealer-Level Inventory Coverage in Months</div>
+        <div class="entry-def">Used in the B&amp;H Photo Dealer WOS Report. Equivalent to WOS expressed in months. A supply coverage of ~3 months is considered healthy for a major dealer. Shown in the Tier 1 bar chart and Tier 3 trend line by SKU over 15 months.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">ASP</div>
+        <div class="entry-full">Average Selling Price</div>
+        <div class="entry-def">The average price at which a product is sold. In the QTD Registration Summary, a "Static ASP" is used — a fixed price per SKU applied uniformly to registration counts to estimate dollar value.</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">$ Var vs OPlan</div>
+        <div class="entry-full">Dollar Variance vs. Operating Plan</div>
+        <div class="entry-def">The difference between Actual Revenue and OPlan for a given product line or time period. Positive = over-plan; Negative = under-plan. Displayed in the Revenue vs. Plan tab of the HW Performance Dashboard.</div>
+        <div class="entry-formula">$ Var = Actual Revenue − OPlan</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-term">% of OPlan</div>
+        <div class="entry-full">Percent of Operating Plan Achieved</div>
+        <div class="entry-def">Actual revenue expressed as a percentage of the OPlan target. 100% = on plan. The HW Performance KPI strip shows "vs April OPlan Pace: 99.6%" for MTD revenue through April 23.</div>
+        <div class="entry-formula">% of OPlan = Actual ÷ OPlan × 100</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 2. WOS THRESHOLDS                           -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="wos">
+    <div class="section-header">
+      <span class="section-icon">📦</span>
+      <div>
+        <div class="section-title">Weeks of Supply (WOS) — Status Thresholds</div>
+        <div class="section-desc">Color-coded inventory health categories applied in Channel Inventory and Dealer WOS dashboards</div>
+      </div>
+    </div>
+
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>WOS Range</th>
+          <th>Color Code</th>
+          <th>Interpretation & Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-red">Stockout Risk</span></td>
+          <td>&lt; 4 weeks</td>
+          <td><span class="swatch" style="background:#ef4444"></span> Red</td>
+          <td>Channel is nearly out of stock. Replenishment orders should be expedited. Risk of lost sales at retail.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Healthy / Low</span></td>
+          <td>4 – 8 weeks</td>
+          <td><span class="swatch" style="background:#22c55e"></span> Green</td>
+          <td>Optimal inventory level. Enough coverage to bridge a reorder cycle without excess. Target range for most SKUs.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-yellow">Elevated</span></td>
+          <td>8 – 13 weeks</td>
+          <td><span class="swatch" style="background:#eab308"></span> Yellow</td>
+          <td>Above the quarter-turn target. Monitor sell-through velocity; hold or reduce incoming orders.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">Overstocked</span></td>
+          <td>13 – 26 weeks</td>
+          <td><span class="swatch" style="background:#f97316"></span> Orange</td>
+          <td>2× the quarterly turn target. Indicates a demand shortfall or over-shipment. Review promotion options.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">Extreme Overstock</span></td>
+          <td>&gt; 26 weeks</td>
+          <td><span class="swatch" style="background:#a855f7"></span> Purple</td>
+          <td>More than 6 months of supply. Likely tied to low/no sell-through velocity. May indicate stale or mismapped inventory. Confirm data quality (e.g., Guitar Center double-counting risk).</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gray">No Velocity</span></td>
+          <td>∞ (zero sales)</td>
+          <td><span class="swatch" style="background:#475569"></span> Gray</td>
+          <td>On-hand quantity exists but no units sold in the trailing 13 weeks. WOS is undefined (division by zero). Displayed as ∞.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:10px;font-size:0.75rem;color:var(--faint)">⚠ Data quality note: Guitar Center WOS figures may include store-level + HQ double-counting per PRD data quality note. Confirm before action.</p>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 3. PRODUCT LINES                            -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="product-lines">
+    <div class="section-header">
+      <span class="section-icon">🎛️</span>
+      <div>
+        <div class="section-title">Product Lines & Abbreviations</div>
+        <div class="section-desc">All hardware product families tracked across dashboards, with abbreviations and descriptions</div>
+      </div>
+    </div>
+
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Abbreviation</th>
+          <th>Full Name</th>
+          <th>Product Type</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--blue)">Apollo Desktop</strong></td>
+          <td>Apollo Desktop Interfaces</td>
+          <td>Audio Interface</td>
+          <td>Includes Apollo Twin X, Apollo x4/x6/x8/x8P/x16 desktop units. Largest revenue contributor. Q2 Actual MTD $1.34M vs OPlan $2.02M (−33.5%).</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--blue)">Apollo Rackmount</strong></td>
+          <td>Apollo Rackmount Interfaces</td>
+          <td>Audio Interface (Rack)</td>
+          <td>Rack-mounted Apollo units for studio/live use. MTD $620K vs OPlan $1.28M (−51.4%). Largest unfavorable variance.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--green)">Volt Desktop</strong></td>
+          <td>Volt USB Audio Interfaces</td>
+          <td>Entry/Mid Audio Interface</td>
+          <td>Volt 1, Volt 2, Volt 176, Volt 276, Volt 476, Volt 476P, Volt 876. Highest unit registration volume. Near-plan performance.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--purple)">AIB</strong></td>
+          <td>Amp In a Box Pedals</td>
+          <td>UAFX Guitar Pedals (Multi)</td>
+          <td>UAFX pedals with amp/multi-FX capabilities. Dream '65, Del-Verb, Golden, etc. Also appears as "GPM" in some data sources. See GPM note.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--pink)">GPM</strong></td>
+          <td>UAFX Guitar Pedals — Multi</td>
+          <td>Guitar Pedal (Multi-FX)</td>
+          <td>In the QTD Registration Summary, "AIB" product line contains GPM PIDs (GPM-DRM, GPM-ANTI, etc.). GPM is the Product ID prefix for "Amp In a Box" multi-FX pedals. Functionally synonymous with AIB in this context.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--teal)">GPS</strong></td>
+          <td>UAFX Guitar Pedals — Single</td>
+          <td>Guitar Pedal (Single-FX)</td>
+          <td>Single-effect UAFX pedals: 1176 Pedal, LA2A Pedal, Evermore, Flow, Heavenly, Orion, etc. GPS prefix = Guitar Pedal Single. Most consistent Product ID naming convention — gold standard pattern.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--yellow)">Modeling Mics</strong></td>
+          <td>UA Modeling Microphones</td>
+          <td>Microphone</td>
+          <td>Sphere series (MIC-UASD, MIC-UASP, MIC-UALX, MIC-UADLX). Model vintage microphones. MTD +78% vs OPlan.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--yellow)">Analog Mics</strong></td>
+          <td>UA Analog Microphones</td>
+          <td>Microphone</td>
+          <td>Traditional condenser/tube microphones: MIC-UA167, MIC-UA187, MIC-UA251. MTD shows a negative actual due to returns/credits offsetting bookings.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--orange)">Amp Top Box</strong></td>
+          <td>OX Amp Top Box</td>
+          <td>Guitar Amplifier Attenuator</td>
+          <td>The OX product (PID: OX, SKU: OX-AMP-TOP-BOX). MTD $12.8K vs OPlan $32.7K (−61%). Low unit volume but high ASP.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--cyan)">Analog</strong></td>
+          <td>UA Analog Hardware</td>
+          <td>Rack Processing / Preamps</td>
+          <td>Classic UA rack hardware: LA-2A, 1176LN, 1176SA/AE, LA-610, S610, 4710D, 6176, etc. MTD +239% vs OPlan — highest over-plan performance.</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--muted)">UAD</strong></td>
+          <td>UAD Accelerator Cards / Satellites</td>
+          <td>DSP Accelerator</td>
+          <td>PCIe cards (PCI2O) and Thunderbolt/USB Satellites (TB3SATO, TB3SATQ, USBSATO). Legacy DSP hardware. Low volume.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 4. TERRITORIES & REGIONS                    -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="territories">
+    <div class="section-header">
+      <span class="section-icon">🌍</span>
+      <div>
+        <div class="section-title">Territories & Regions</div>
+        <div class="section-desc">Territory codes used in Booked USD and Registration dashboards, grouped by region</div>
+      </div>
+    </div>
+
+    <div class="territory-cols">
+      <div class="ter-group">
+        <h4 style="color:var(--blue)">🌎 Americas</h4>
+        <ul>
+          <li><span class="ter-code">US_Northeast</span><span class="ter-name">US Northeast region</span></li>
+          <li><span class="ter-code">US_Southeast</span><span class="ter-name">US Southeast region</span></li>
+          <li><span class="ter-code">US_Western</span><span class="ter-name">US Western region</span></li>
+          <li><span class="ter-code">US_South_Central</span><span class="ter-name">US South-Central region</span></li>
+          <li><span class="ter-code">US_Enterprise_East</span><span class="ter-name">US Enterprise accounts, East</span></li>
+          <li><span class="ter-code">US_Enterprise_West</span><span class="ter-name">US Enterprise accounts, West</span></li>
+          <li><span class="ter-code">Canada</span><span class="ter-name">Canada direct</span></li>
+          <li><span class="ter-code">LatAm</span><span class="ter-name">Latin America</span></li>
+          <li><span class="ter-code">Non-Channel_US</span><span class="ter-name">US non-channel (direct/web)</span></li>
+          <li><span class="ter-code">Xchange</span><span class="ter-name">Software / exchange transactions</span></li>
+        </ul>
+      </div>
+      <div class="ter-group">
+        <h4 style="color:var(--green)">🌍 EMEA</h4>
+        <ul>
+          <li><span class="ter-code">EMEA_Dist</span><span class="ter-name">EMEA distributor (general)</span></li>
+          <li><span class="ter-code">EMEA_France</span><span class="ter-name">France direct territory</span></li>
+          <li><span class="ter-code">EMEA_UK</span><span class="ter-name">United Kingdom direct</span></li>
+          <li><span class="ter-code">EMEA_Nord</span><span class="ter-name">Nordic countries</span></li>
+          <li><span class="ter-code">EMEA_GAS_East</span><span class="ter-name">Germany/Austria/Switzerland — East</span></li>
+          <li><span class="ter-code">EMEA_GAS_West</span><span class="ter-name">Germany/Austria/Switzerland — West</span></li>
+          <li><span class="ter-code">EMEA_Benelux</span><span class="ter-name">Belgium/Netherlands/Luxembourg</span></li>
+          <li><span class="ter-code">Non-Channel_AMS</span><span class="ter-name">EMEA/AMS non-channel direct</span></li>
+        </ul>
+      </div>
+      <div class="ter-group">
+        <h4 style="color:var(--yellow)">🌏 APAC</h4>
+        <ul>
+          <li><span class="ter-code">APAC</span><span class="ter-name">Asia-Pacific (general)</span></li>
+          <li><span class="ter-code">Amazon Europe</span><span class="ter-name">Amazon EU marketplace</span></li>
+        </ul>
+        <h4 style="color:var(--orange); margin-top:16px">Booked USD Region Summary</h4>
+        <ul style="margin-top:8px">
+          <li style="flex-direction:column;gap:2px">
+            <span style="font-size:0.78rem;color:var(--text)">Americas: all <code>US_*</code>, <code>Canada</code>, <code>LatAm</code>, <code>Non-Channel_US</code>, <code>Xchange</code></span>
+          </li>
+          <li style="flex-direction:column;gap:2px">
+            <span style="font-size:0.78rem;color:var(--text)">EMEA: all <code>EMEA_*</code>, <code>Non-Channel_AMS</code></span>
+          </li>
+          <li style="flex-direction:column;gap:2px">
+            <span style="font-size:0.78rem;color:var(--text)">APAC: <code>APAC</code>, <code>Amazon Europe</code></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 5. PRODUCT ID PATTERNS                      -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="product-id">
+    <div class="section-header">
+      <span class="section-icon">🔍</span>
+      <div>
+        <div class="section-title">Product ID Field Relationship Patterns</div>
+        <div class="section-desc">The 9 patterns that describe how Product ID, SKU ID, and Core Product ID relate across 137 active records</div>
+      </div>
+    </div>
+
+    <div class="pattern-grid">
+      <div class="pat-card" style="border-color:#22c55e">
+        <div class="pat-label" style="color:#22c55e">Full Match <span style="font-size:0.72rem;background:#14532d;color:#86efac;padding:1px 6px;border-radius:3px;margin-left:4px">18 records</span></div>
+        <div class="pat-desc">Product ID = SKU ID = Core Product ID. All three fields are identical. Highest data quality. Common in Analog Mics (MIC-UA187, MIC-UASD-1) and classic Analog hardware (LA2A, 1176LN, 4710D).</div>
+      </div>
+      <div class="pat-card" style="border-color:#3b82f6">
+        <div class="pat-label" style="color:#3b82f6">Core = PID, SKU Differs <span style="font-size:0.72rem;background:#1e3a5f;color:#93c5fd;padding:1px 6px;border-radius:3px;margin-left:4px">29 records</span></div>
+        <div class="pat-desc">Core Product ID equals Product ID exactly, but SKU ID is a human-readable alternate form. Common in Volt (VOLT876 → "VOLT-876"), GPM pedals (GPM-DRM → "DREAM-PEDAL"), and GPS pedals (GPS-1176 → "1176-PEDAL").</div>
+      </div>
+      <div class="pat-card" style="border-color:#06b6d4">
+        <div class="pat-label" style="color:#06b6d4">Core is Prefix of PID <span style="font-size:0.72rem;background:#164e63;color:#67e8f9;padding:1px 6px;border-radius:3px;margin-left:4px">10 records</span></div>
+        <div class="pat-desc">Core Product ID is the base stem of Product ID (suffix stripped). E.g., Core "APLTWXDU" → PID "APLTWXDU-HE". The suffix encodes a variant tier (HE = Heritage Edition, STU = Studio, etc.).</div>
+      </div>
+      <div class="pat-card" style="border-color:#8b5cf6">
+        <div class="pat-label" style="color:#8b5cf6">Shared Core — Sibling Variants <span style="font-size:0.72rem;background:#3b0764;color:#d8b4fe;padding:1px 6px;border-radius:3px;margin-left:4px">12 records</span></div>
+        <div class="pat-desc">Multiple Product IDs share one Core Product ID. These are product tier variants (e.g., APX16G2-ESS and APX16G2-ULT both use Core "APX16G2"). Core ID is the correct rollup key for base-model analysis.</div>
+      </div>
+      <div class="pat-card" style="border-color:#f59e0b">
+        <div class="pat-label" style="color:#f59e0b">Bundle / Subscription <span style="font-size:0.72rem;background:#78350f;color:#fde68a;padding:1px 6px;border-radius:3px;margin-left:4px">31 records</span></div>
+        <div class="pat-desc">SKU ID = Product ID, and Core Product ID is intentionally blank. These are software bundles (UAD-SELECT, UAD-COMPLETE4), subscriptions (UAD-SPARK-ANNUAL), and plugin packs. No Core expected — this is by design.</div>
+      </div>
+      <div class="pat-card" style="border-color:#f97316">
+        <div class="pat-label" style="color:#f97316">⚠ Descriptive SKU, Missing Core <span style="font-size:0.72rem;background:#7c2d12;color:#fdba74;padding:1px 6px;border-radius:3px;margin-left:4px">5 records</span></div>
+        <div class="pat-desc">Hardware products with long-form descriptive SKUs (UAD-2-APOLLO-...) but no Core Product ID populated. Unlike bundles, these are physical hardware with siblings that DO have Core IDs — the gap is a data entry inconsistency, not by design.</div>
+      </div>
+      <div class="pat-card" style="border-color:#ec4899">
+        <div class="pat-label" style="color:#ec4899">Refurbished — Shared SKU <span style="font-size:0.72rem;background:#831843;color:#fbcfe8;padding:1px 6px;border-radius:3px;margin-left:4px">12 records</span></div>
+        <div class="pat-desc">Refurb products share their parent's SKU ID but carry a "-REFURB" suffix in Product ID (e.g., LA2A-REFURB shares SKU "LA2A"). Only 6176-REFURB has Core populated. The other 11 refurbs are invisible in Core-level rollups — a silent undercounting risk.</div>
+      </div>
+      <div class="pat-card" style="border-color:#475569">
+        <div class="pat-label" style="color:#94a3b8">Accessory — No IDs Expected <span style="font-size:0.72rem;background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:1px 6px;border-radius:3px;margin-left:4px">17 records</span></div>
+        <div class="pat-desc">Physical accessories (power supplies, cables, mic stands) with no SKU ID or Core Product ID — by design. E.g., PSU-TWIN/X4-US, CBL-SPHERE25, SM-251. Product ID exists for order tracking but no family rollup is needed.</div>
+      </div>
+      <div class="pat-card" style="border-color:#dc2626">
+        <div class="pat-label" style="color:#ef4444">⚠ Missing / No IDs <span style="font-size:0.72rem;background:#450a0a;color:#fca5a5;border:1px solid #dc2626;padding:1px 6px;border-radius:3px;margin-left:4px">3 records</span></div>
+        <div class="pat-desc">Records with blank Product ID (LUNA-UPGRADE: $1,626) or no SKU and no Core (APE1X: $1,361 booked with no IDs). These records cannot be attributed to a product family. Revenue is orphaned in product-level reporting.</div>
+      </div>
+    </div>
+
+    <hr class="divider" style="margin-top:20px">
+    <h4 style="font-size:0.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Product ID Suffix Legend</h4>
+    <table class="ref-table">
+      <thead><tr><th>Suffix</th><th>Meaning</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>-ESS</code></td><td>Essential Edition (entry tier)</td><td>APX8G2-ESS</td></tr>
+        <tr><td><code>-STU</code></td><td>Studio Edition (mid tier)</td><td>APX8G2-STU</td></tr>
+        <tr><td><code>-ULT</code></td><td>Ultimate Edition (top tier)</td><td>APX16G2-ULT</td></tr>
+        <tr><td><code>-HE</code></td><td>Heritage Edition</td><td>APLTWXDU-HE, APLSU-HE, APLS-HE</td></tr>
+        <tr><td><code>-REFURB</code></td><td>Certified Refurbished unit</td><td>LA2A-REFURB, VOLT476-REFURB</td></tr>
+        <tr><td><code>-C</code></td><td>Core variant (DSP Satellites)</td><td>TB3SATO-C, PCI2O-C</td></tr>
+        <tr><td><code>G2</code></td><td>Generation 2 hardware</td><td>APX8G2, APTXDG2, APX16DG2</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 6. DEALERS & AI LEVELS                      -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="dealers">
+    <div class="section-header">
+      <span class="section-icon">🏪</span>
+      <div>
+        <div class="section-title">Dealers & Adaptive Insights (AI) Levels</div>
+        <div class="section-desc">Key channel partners and the AI Level naming convention used in sell-through registration data</div>
+      </div>
+    </div>
+
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Dealer / AI Level</th>
+          <th>Type</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Guitar Center</strong></td><td>Major US Retailer</td><td>Largest on-hand inventory holder. WOS flags suggest potential HQ + store double-counting — verify before action. Carries Volt, Apollo Desktop, AIB, GPS/GPM, Amp Top Box.</td></tr>
+        <tr><td><strong>Sweetwater</strong></td><td>Major US Online Retailer</td><td>Healthy WOS across most product groups. Particularly strong on Apollo, Volt, Modeling Mics, and GPS/GPM.</td></tr>
+        <tr><td><strong>Amazon</strong></td><td>Marketplace / Fulfillment</td><td>Significant volume on Volt and Apollo Desktop. Amazon Europe tracked separately in Booked USD.</td></tr>
+        <tr><td><strong>Musical Fulfillment</strong></td><td>US Fulfillment Partner</td><td>Flagged for extreme WOS on Volt (98 wks) and AIB (85 wks). Verify inventory data accuracy.</td></tr>
+        <tr><td><strong>B&amp;H Photo</strong></td><td>Major US Specialty Retailer</td><td>Subject of the Dealer WOS Report. Inventory shown in Months of Supply by SKU over 15 months.</td></tr>
+        <tr><td><strong>Musician's Friend</strong></td><td>US Online Retailer</td><td>Guitar Center subsidiary. Carries Apollo Desktop, Volt, AIB, GPM, Modeling Mics.</td></tr>
+        <tr><td><strong>Hook Up</strong></td><td>International Distributor</td><td>Top QTD dealer by registrations in sell-through data (391 regs, $153K Reg Dollars).</td></tr>
+        <tr><td><strong>EMEA_Dist_Gen</strong></td><td>EMEA General Distributor</td><td>AI Level grouping for EMEA distributor accounts. 406 QTD regs in registration data.</td></tr>
+        <tr><td><strong>Gearlounge</strong></td><td>European Retailer</td><td>192 QTD regs, $103K Reg Dollars. Significant European sell-through contributor.</td></tr>
+        <tr><td><strong>Vintage King</strong></td><td>US Pro Audio Dealer</td><td>High-value transactions (27 regs but $27.8K Reg Dollars → high ASP). Studio/professional segment.</td></tr>
+        <tr><td><strong>DMT / Hook Up</strong></td><td>APAC/LatAm Distributors</td><td>Appear in the Bomisco Top 5 Adaptive Insights accounts.</td></tr>
+        <tr><td><strong>Non-Channel_US</strong></td><td>Direct / Web Sales</td><td>UA direct-to-consumer or web store transactions. Not attributed to a dealer territory.</td></tr>
+      </tbody>
+    </table>
+
+    <hr class="divider" style="margin-top:16px">
+    <h4 style="font-size:0.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Adaptive Insights (AI) Level</h4>
+    <p style="font-size:0.82rem;color:var(--text);line-height:1.6;max-width:780px">
+      "Adaptive Insights Level" (AI Level) is the dealer/account grouping key used in the sell-through registration system. Each AI Level corresponds to a specific dealer or regional distributor group. Used in the QTD Registration Summary's dealer breakdown and in the Bomisco Inventory dashboard (Top 5 AI Accounts = top 5 by on-hand inventory volume). The AI Level label may be a company name (e.g., "Amazon", "Hook Up") or a territory roll-up code (e.g., "EMEA_Dist_Gen").
+    </p>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 7. ACTIVE ANOMALIES                         -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="anomalies">
+    <div class="section-header">
+      <span class="section-icon">⚠️</span>
+      <div>
+        <div class="section-title">Active Data Anomalies</div>
+        <div class="section-desc">Known data quality issues flagged in the Product ID Patterns dashboard — require data correction</div>
+      </div>
+    </div>
+
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Record</th>
+          <th>Issue</th>
+          <th>Booked USD</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>APX8G2-ESS</code></td>
+          <td>Missing Core Product ID. Sibling APX8G2-STU has Core "APX8G2" populated.</td>
+          <td style="color:#fca5a5">$135,667</td>
+          <td>Invisible in Core-level rollups. Apollo X8 Gen 2 family undercounted by this amount.</td>
+        </tr>
+        <tr>
+          <td><code>APX4G2-ESS</code></td>
+          <td>Missing Core Product ID. Sibling APX4G2-STU has Core "APX4G2" populated.</td>
+          <td style="color:#fca5a5">$102,297</td>
+          <td>Apollo X4 Gen 2 family rollup is incomplete. Has a linked REFURB SKU that also lacks Core.</td>
+        </tr>
+        <tr>
+          <td><code>APTXQG2-ESS</code></td>
+          <td>Missing Core Product ID. Sibling APTXQG2-STU has Core "APTXQG2" populated.</td>
+          <td style="color:#fca5a5">$85,919</td>
+          <td>Apollo Twin X Quad Gen 2 rollup incomplete. Combined with APX8G2-ESS + APX4G2-ESS = $323K affected.</td>
+        </tr>
+        <tr>
+          <td><code>710TF</code></td>
+          <td>SKU is truncated to "710" instead of the expected full form. No Core Product ID.</td>
+          <td style="color:#fca5a5">$10,719</td>
+          <td>Cannot be joined to product family via SKU or Core. Revenue stranded from family-level analysis.</td>
+        </tr>
+        <tr>
+          <td><code>(blank PID)</code> — SKU: <code>LUNA-UPGRADE</code></td>
+          <td>Product ID field is completely blank. No PID, no Core.</td>
+          <td style="color:#fca5a5">$1,626</td>
+          <td>Revenue cannot be attributed to any product family. Territory rollups work, product rollups lose this record.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:10px;font-size:0.75rem;color:var(--faint)">All anomalies are data entry inconsistencies, not system rules. Correction should be made in the source system (Omni / Salesforce).</p>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 8. DATA SOURCES                             -->
+  <!-- ════════════════════════════════════════════ -->
+  <section class="section" id="sources">
+    <div class="section-header">
+      <span class="section-icon">🗄️</span>
+      <div>
+        <div class="section-title">Data Sources</div>
+        <div class="section-desc">Where the data in each dashboard originates</div>
+      </div>
+    </div>
+
+    <div class="source-chips">
+      <div class="chip">
+        <div class="chip-icon">🔵</div>
+        <div>
+          <div class="chip-name">Omni Redshift</div>
+          <div class="chip-desc">Primary data warehouse. Powers Booked USD, Revenue vs Plan, and Channel Inventory tabs. Accessible via the <a href="https://universalaudio.omniapp.co/e/1:Flhy8yiA/1" target="_blank" style="color:var(--blue)">Hardware Sales &amp; Forecast Workbook</a>.</div>
+        </div>
+      </div>
+      <div class="chip">
+        <div class="chip-icon">📋</div>
+        <div>
+          <div class="chip-name">fct_registrations</div>
+          <div class="chip-desc">Registration fact table in Redshift. Source for all sell-through / QTD registration data (units and dollar estimates). Updated weekly.</div>
+        </div>
+      </div>
+      <div class="chip">
+        <div class="chip-icon">📊</div>
+        <div>
+          <div class="chip-name">v2 Hardware Sales &amp; Forecast</div>
+          <div class="chip-desc">Omni workbook containing OPlan, Committed Forecast, and actual revenue data by product line, territory, and month. Basis for the Revenue vs Plan and Booked USD dashboards.</div>
+        </div>
+      </div>
+      <div class="chip">
+        <div class="chip-icon">🗂️</div>
+        <div>
+          <div class="chip-name">Bomisco POS</div>
+          <div class="chip-desc">Point-of-sale data feed from channel partners. Powers the Bomisco Inventory dashboard (Top 5 Adaptive Insights accounts by on-hand quantity) and the Channel Inventory tab.</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider" style="margin-top:20px">
+    <h4 style="font-size:0.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">As-of Dates</h4>
+    <table class="ref-table" style="max-width:560px">
+      <thead><tr><th>Dashboard</th><th>Data As Of</th></tr></thead>
+      <tbody>
+        <tr><td>HW Performance Dashboard</td><td>April 23, 2026</td></tr>
+        <tr><td>QTD Registration Summary</td><td>April 20, 2026 (partial week)</td></tr>
+        <tr><td>Booked USD Summary</td><td>Q2 2026 YTD</td></tr>
+        <tr><td>Dealer WOS — B&amp;H Photo</td><td>February 2026 (15-month trend)</td></tr>
+        <tr><td>Bomisco Inventory</td><td>Monthly sum, Q2 2026</td></tr>
+        <tr><td>Product ID Patterns</td><td>Q2 2026 · 137 records analyzed</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime at Apollo — All Dashboards</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    background: #1a1a2e;
+    color: white;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #2d3a56;
+  }
+  header h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+  header span { font-size: 0.78rem; color: #64748b; }
+
+  .tab-bar {
+    background: #1e2a40;
+    display: flex;
+    gap: 2px;
+    padding: 0 16px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 18px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #94a3b8;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    user-select: none;
+    border-radius: 4px 4px 0 0;
+  }
+  .tab:hover { color: #cbd5e1; background: rgba(255,255,255,0.05); }
+  .tab.active {
+    color: #ffffff;
+    border-bottom-color: #3b82f6;
+    background: rgba(59,130,246,0.1);
+  }
+
+  .tab-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    line-height: 1.4;
+  }
+  .badge-sales    { background: #1d4ed8; color: #bfdbfe; }
+  .badge-reg      { background: #6d28d9; color: #ede9fe; }
+  .badge-dealer   { background: #b45309; color: #fef3c7; }
+  .badge-inv      { background: #15803d; color: #dcfce7; }
+  .badge-ref      { background: #475569; color: #e2e8f0; }
+
+  .panels {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .panel {
+    position: absolute;
+    inset: 0;
+    display: none;
+  }
+  .panel.active { display: block; }
+
+  .panel iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⭐ Showtime at Apollo</h1>
+  <span>Q2 2026 · Hardware Sales Intelligence · Source: Omni Redshift</span>
+</header>
+
+<div class="tab-bar" id="tabBar">
+  <div class="tab active" data-tab="hw_sales">
+    📊 HW Performance <span class="tab-badge badge-sales">Sales</span>
+  </div>
+  <div class="tab" data-tab="booked_usd">
+    💰 Booked USD <span class="tab-badge badge-sales">Sales</span>
+  </div>
+  <div class="tab" data-tab="qtd_reg">
+    📝 QTD Registrations <span class="tab-badge badge-reg">Registrations</span>
+  </div>
+  <div class="tab" data-tab="dealer_wos">
+    🏪 Dealer WOS <span class="tab-badge badge-dealer">Dealer</span>
+  </div>
+  <div class="tab" data-tab="bomisco">
+    🗂️ Bomisco Inventory <span class="tab-badge badge-inv">Inventory</span>
+  </div>
+  <div class="tab" data-tab="product_id">
+    🔍 Product ID Patterns <span class="tab-badge badge-ref">Reference</span>
+  </div>
+  <div class="tab" data-tab="glossary">
+    📖 Glossary <span class="tab-badge badge-ref">Reference</span>
+  </div>
+</div>
+
+<div class="panels">
+  <div class="panel active" id="panel-hw_sales">
+    <iframe src="hw_sales_dashboard.html" title="HW Sales Dashboard"></iframe>
+  </div>
+  <div class="panel" id="panel-booked_usd">
+    <iframe src="booked_usd_app.html" title="Booked USD"></iframe>
+  </div>
+  <div class="panel" id="panel-qtd_reg">
+    <iframe src="qtd_registration_summary.html" title="QTD Registrations"></iframe>
+  </div>
+  <div class="panel" id="panel-dealer_wos">
+    <iframe src="dealer_wos_report.html" title="Dealer WOS"></iframe>
+  </div>
+  <div class="panel" id="panel-bomisco">
+    <iframe src="bomisco_inventory.html" title="Bomisco Inventory"></iframe>
+  </div>
+  <div class="panel" id="panel-product_id">
+    <iframe src="product_id_patterns.html" title="Product ID Patterns"></iframe>
+  </div>
+  <div class="panel" id="panel-glossary">
+    <iframe src="glossary.html" title="Glossary"></iframe>
+  </div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+  const loaded = new Set(['hw_sales', 'glossary']); // first panel pre-loaded + glossary
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const id = tab.dataset.tab;
+
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+
+      tab.classList.add('active');
+      document.getElementById('panel-' + id).classList.add('active');
+
+      // lazy-load iframes on first visit
+      if (!loaded.has(id)) {
+        loaded.add(id);
+        const panel = document.getElementById('panel-' + id);
+        const iframe = panel.querySelector('iframe');
+        const src = iframe.getAttribute('src');
+        // already set via HTML; just ensure it's loaded
+        if (!iframe.getAttribute('data-loaded')) {
+          iframe.setAttribute('data-loaded', '1');
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>
