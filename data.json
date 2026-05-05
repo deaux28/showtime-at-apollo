@@ -19,5 +19,97 @@
     ],
     "apolloOplanQ2": 11397544.83,
     "apolloRebateTargetQ2": 11309694.10
-  }
+  },
+  "registrationsByProductLine": [
+    {
+      "weekStart": "2026-03-30", "isContextWeek": true, "isPartial": false,
+      "products": {
+        "Apollo Desktop":   { "units": 463,  "dollars": 376890.90 },
+        "Apollo Rackmount": { "units": 120,  "dollars": 247655.60 },
+        "Volt Desktop":     { "units": 771,  "dollars": 128812.87 },
+        "AIB":              { "units": 144,  "dollars": 38681.48  },
+        "Modeling Mics":    { "units": 91,   "dollars": 25566.39  },
+        "GPM":              { "units": 56,   "dollars": 14753.44  },
+        "UAD":              { "units": 32,   "dollars": 16896.67  },
+        "GPS":              { "units": 46,   "dollars": 5143.01   },
+        "Amp Top Box":      { "units": 9,    "dollars": 8791.04   },
+        "Analog Mics":      { "units": 2,    "dollars": 1785.91   }
+      }
+    },
+    {
+      "weekStart": "2026-04-06", "isContextWeek": false, "isPartial": false,
+      "products": {
+        "Apollo Desktop":   { "units": 616,  "dollars": 499767.74 },
+        "Apollo Rackmount": { "units": 135,  "dollars": 277614.97 },
+        "Volt Desktop":     { "units": 1126, "dollars": 182192.49 },
+        "AIB":              { "units": 179,  "dollars": 48503.04  },
+        "Modeling Mics":    { "units": 142,  "dollars": 56275.68  },
+        "GPM":              { "units": 90,   "dollars": 24027.54  },
+        "UAD":              { "units": 37,   "dollars": 22251.72  },
+        "GPS":              { "units": 63,   "dollars": 7104.53   },
+        "Amp Top Box":      { "units": 17,   "dollars": 16605.30  },
+        "Analog Mics":      { "units": 1,    "dollars": 801.99    }
+      }
+    },
+    {
+      "weekStart": "2026-04-13", "isContextWeek": false, "isPartial": false,
+      "products": {
+        "Apollo Desktop":   { "units": 645,  "dollars": 503416.41 },
+        "Apollo Rackmount": { "units": 123,  "dollars": 252097.75 },
+        "Volt Desktop":     { "units": 1073, "dollars": 179853.05 },
+        "AIB":              { "units": 177,  "dollars": 47856.06  },
+        "Modeling Mics":    { "units": 136,  "dollars": 45675.99  },
+        "GPM":              { "units": 90,   "dollars": 23955.45  },
+        "UAD":              { "units": 34,   "dollars": 19993.08  },
+        "GPS":              { "units": 59,   "dollars": 6699.80   },
+        "Amp Top Box":      { "units": 17,   "dollars": 16605.30  },
+        "Analog Mics":      { "units": 0,    "dollars": 0         }
+      }
+    },
+    {
+      "weekStart": "2026-04-20", "isContextWeek": false, "isPartial": false,
+      "products": {
+        "Apollo Desktop":   { "units": 570,  "dollars": 454591.35 },
+        "Apollo Rackmount": { "units": 121,  "dollars": 252378.70 },
+        "Volt Desktop":     { "units": 1071, "dollars": 174310.36 },
+        "AIB":              { "units": 148,  "dollars": 40024.59  },
+        "Modeling Mics":    { "units": 114,  "dollars": 37740.23  },
+        "GPM":              { "units": 105,  "dollars": 27840.85  },
+        "UAD":              { "units": 29,   "dollars": 20098.33  },
+        "GPS":              { "units": 54,   "dollars": 6066.08   },
+        "Amp Top Box":      { "units": 18,   "dollars": 17493.98  },
+        "Analog Mics":      { "units": 1,    "dollars": 1785.91   }
+      }
+    },
+    {
+      "weekStart": "2026-04-27", "isContextWeek": false, "isPartial": false,
+      "products": {
+        "Apollo Desktop":   { "units": 586,  "dollars": 472782.38 },
+        "Apollo Rackmount": { "units": 90,   "dollars": 190121.69 },
+        "Volt Desktop":     { "units": 987,  "dollars": 164465.06 },
+        "AIB":              { "units": 153,  "dollars": 41132.03  },
+        "Modeling Mics":    { "units": 119,  "dollars": 48401.52  },
+        "GPM":              { "units": 98,   "dollars": 26210.30  },
+        "UAD":              { "units": 29,   "dollars": 20596.78  },
+        "GPS":              { "units": 45,   "dollars": 5078.82   },
+        "Amp Top Box":      { "units": 16,   "dollars": 15628.51  },
+        "Analog Mics":      { "units": 2,    "dollars": 4893.80   }
+      }
+    },
+    {
+      "weekStart": "2026-05-04", "isContextWeek": false, "isPartial": true,
+      "products": {
+        "Apollo Desktop":   { "units": 96,   "dollars": 85267.73  },
+        "Apollo Rackmount": { "units": 22,   "dollars": 44823.80  },
+        "Volt Desktop":     { "units": 153,  "dollars": 24654.12  },
+        "AIB":              { "units": 33,   "dollars": 8930.78   },
+        "Modeling Mics":    { "units": 13,   "dollars": 4083.06   },
+        "GPM":              { "units": 10,   "dollars": 2697.62   },
+        "UAD":              { "units": 6,    "dollars": 4325.42   },
+        "GPS":              { "units": 5,    "dollars": 569.57    },
+        "Amp Top Box":      { "units": 0,    "dollars": 0         },
+        "Analog Mics":      { "units": 0,    "dollars": 0         }
+      }
+    }
+  ]
 }

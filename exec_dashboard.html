@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UA Executive Dashboard — Q2 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -204,6 +205,63 @@
   .val-red    { color: #f87171; }
   .val-white  { color: #f1f5f9; }
 
+  /* ── Registration charts ── */
+  .chart-section {
+    background: #1e2a40;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .chart-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    margin-bottom: 14px;
+  }
+  .chart-note {
+    font-size: 0.65rem;
+    color: #475569;
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* ── Registration table ── */
+  .reg-table-wrap { overflow-x: auto; }
+  .reg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+  .reg-table th {
+    text-align: right;
+    padding: 7px 10px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    white-space: nowrap;
+  }
+  .reg-table th:first-child { text-align: left; }
+  .reg-table td {
+    text-align: right;
+    padding: 6px 10px;
+    color: #94a3b8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    white-space: nowrap;
+  }
+  .reg-table td:first-child { text-align: left; color: #cbd5e1; }
+  .reg-table td.bold { font-weight: 700; color: #f1f5f9; }
+  .reg-table tr.total-row td {
+    font-weight: 700;
+    color: #f1f5f9;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    border-bottom: none;
+  }
+
   /* ── Skeleton loader ── */
   .skeleton {
     background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
@@ -293,6 +351,19 @@
 <div class="panels">
   <div class="panel active" id="panel-registrations">
     <div class="reg-strip" id="reg-cards"></div>
+
+    <div class="chart-section">
+      <div class="chart-title">Weekly Registrations — Units by Product Line</div>
+      <canvas id="regChart" height="90"></canvas>
+      <div class="chart-note" id="regChartNote"></div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-title" id="regTableTitle">QTD Registration Summary by Product Line</div>
+      <div class="reg-table-wrap">
+        <table class="reg-table" id="regTable"></table>
+      </div>
+    </div>
   </div>
 
   <div class="panel" id="panel-bookings">
@@ -453,6 +524,145 @@
     `).join('');
   }
 
+  // ── Product line colors ──
+  const PL_COLORS = {
+    'Apollo Desktop':   '#3b82f6',
+    'Apollo Rackmount': '#93c5fd',
+    'Volt Desktop':     '#22c55e',
+    'AIB':              '#f97316',
+    'Modeling Mics':    '#ec4899',
+    'GPM':              '#a855f7',
+    'UAD':              '#16a34a',
+    'GPS':              '#84cc16',
+    'Amp Top Box':      '#eab308',
+    'Analog Mics':      '#94a3b8',
+  };
+  const PL_ORDER = Object.keys(PL_COLORS);
+
+  let regChartInstance = null;
+
+  // ── Render registration chart + table ──
+  function renderRegistrationCharts(d) {
+    if (!d.registrationsByProductLine) return;
+    const weeks = d.registrationsByProductLine;
+
+    const today        = new Date();
+    const curWeekISO   = toISO(getMondayOfWeek(today));
+    const w1ISO        = toISO(new Date(getMondayOfWeek(today).setDate(getMondayOfWeek(today).getDate() - 7)));
+    const w2ISO        = toISO(new Date(new Date(curWeekISO).setDate(new Date(curWeekISO).getDate() - 14)));
+
+    // ── Stacked bar chart ──
+    const chartLabels = weeks.map(w => {
+      const d = new Date(w.weekStart + 'T00:00:00');
+      let label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      if (w.isContextWeek) label += '†';
+      if (w.weekStart === curWeekISO) label += '*';
+      return label;
+    });
+
+    const datasets = PL_ORDER.map(pl => ({
+      label: pl,
+      data: weeks.map(w => (w.products[pl] || {}).units || 0),
+      backgroundColor: PL_COLORS[pl],
+      borderWidth: 0,
+    }));
+
+    const ctx = document.getElementById('regChart').getContext('2d');
+    if (regChartInstance) regChartInstance.destroy();
+    regChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: chartLabels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12, padding: 14 }
+          },
+          tooltip: { mode: 'index' }
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } },
+          y: { stacked: true, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+      }
+    });
+
+    // footnotes
+    const notes = [];
+    if (weeks.some(w => w.isContextWeek)) notes.push('† Q1 context week');
+    if (weeks.some(w => w.weekStart === curWeekISO)) notes.push('* Partial week (current)');
+    document.getElementById('regChartNote').textContent = notes.join('. ') + (notes.length ? '.' : '');
+
+    // ── Summary table ──
+    const q2Weeks   = weeks.filter(w => !w.isContextWeek);
+    const tableWeeks = [
+      weeks.find(w => w.weekStart === w2ISO),
+      weeks.find(w => w.weekStart === w1ISO),
+      weeks.find(w => w.weekStart === curWeekISO),
+    ].filter(Boolean);
+
+    const fmtK = n => n >= 1000 ? '$' + Math.round(n / 1000) + 'K' : '$' + Math.round(n);
+
+    const headerDate = w => {
+      const dt = new Date(w.weekStart + 'T00:00:00');
+      let l = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+      if (w.weekStart === curWeekISO) l += '*';
+      return l;
+    };
+
+    let thead = '<thead><tr><th>Product Line</th>';
+    tableWeeks.forEach(w => { thead += `<th>${headerDate(w)} Units</th>`; });
+    thead += '<th>QTD Units</th>';
+    tableWeeks.forEach(w => { thead += `<th>${headerDate(w)} $</th>`; });
+    thead += '<th>QTD $</th></tr></thead>';
+
+    let tbody = '<tbody>';
+    let totUnits = {}, totDollars = {};
+    tableWeeks.forEach(w => { totUnits[w.weekStart] = 0; totDollars[w.weekStart] = 0; });
+    let grandQtdUnits = 0, grandQtdDollars = 0;
+
+    PL_ORDER.forEach(pl => {
+      const qtdUnits   = q2Weeks.reduce((s, w) => s + ((w.products[pl] || {}).units   || 0), 0);
+      const qtdDollars = q2Weeks.reduce((s, w) => s + ((w.products[pl] || {}).dollars || 0), 0);
+      if (qtdUnits === 0 && qtdDollars === 0) return;
+
+      grandQtdUnits   += qtdUnits;
+      grandQtdDollars += qtdDollars;
+
+      tbody += `<tr><td>${pl}</td>`;
+      tableWeeks.forEach(w => {
+        const u = (w.products[pl] || {}).units || 0;
+        totUnits[w.weekStart] += u;
+        tbody += `<td>${u.toLocaleString()}</td>`;
+      });
+      tbody += `<td class="bold">${qtdUnits.toLocaleString()}</td>`;
+      tableWeeks.forEach(w => {
+        const dol = (w.products[pl] || {}).dollars || 0;
+        totDollars[w.weekStart] += dol;
+        tbody += `<td>${fmtK(dol)}</td>`;
+      });
+      tbody += `<td class="bold">${fmtK(qtdDollars)}</td></tr>`;
+    });
+
+    tbody += '<tr class="total-row"><td>TOTAL</td>';
+    tableWeeks.forEach(w => { tbody += `<td>${totUnits[w.weekStart].toLocaleString()}</td>`; });
+    tbody += `<td>${grandQtdUnits.toLocaleString()}</td>`;
+    tableWeeks.forEach(w => { tbody += `<td>${fmtK(totDollars[w.weekStart])}</td>`; });
+    tbody += `<td>${fmtK(grandQtdDollars)}</td></tr></tbody>`;
+
+    document.getElementById('regTable').innerHTML = thead + tbody;
+
+    // table title date range
+    const q2Sorted = [...q2Weeks].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+    if (q2Sorted.length >= 2) {
+      const first = new Date(q2Sorted[0].weekStart + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+      const last  = new Date(q2Sorted[q2Sorted.length - 1].weekStart + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+      document.getElementById('regTableTitle').textContent =
+        `QTD Registration Summary by Product Line — ${first} through ${last}`;
+    }
+  }
+
   // ── Refresh ──
   async function refreshData() {
     const btn = document.getElementById('refreshBtn');
@@ -462,6 +672,7 @@
       const data = await fetchFromOmni();
       renderMetrics(data);
       renderRegistrations(data);
+      renderRegistrationCharts(data);
       document.getElementById('lastUpdated').textContent =
         'Data as of ' + (data.lastFetched || '—');
     } catch (e) {
