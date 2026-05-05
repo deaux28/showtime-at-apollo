@@ -1,9 +1,23 @@
 {
-  "lastFetched": "2026-05-04",
+  "lastFetched": "2026-05-05",
   "qtdBookings": 5143846.69,
   "q2RebateTarget": 18216000.00,
   "q2OplanTarget": 17254900.95,
   "monthlyRebateTarget": 6094270.97,
   "currentMonth": "May 2026",
-  "openBacklog": 2056509.28
+  "openBacklog": 2056509.28,
+  "apolloQtdBookings": 3233735.35,
+  "apolloRebateTargetQ2": 11309694.10,
+  "registrations": {
+    "weeks": [
+      { "weekStart": "2026-03-30", "units": 583,  "dollars": 260810.88 },
+      { "weekStart": "2026-04-06", "units": 751,  "dollars": 334334.12 },
+      { "weekStart": "2026-04-13", "units": 768,  "dollars": 345367.99 },
+      { "weekStart": "2026-04-20", "units": 691,  "dollars": 313918.51 },
+      { "weekStart": "2026-04-27", "units": 676,  "dollars": 294360.89 },
+      { "weekStart": "2026-05-04", "units": 118,  "dollars": 46369.28  }
+    ],
+    "apolloOplanQ2": 11397544.83,
+    "apolloRebateTargetQ2": 11309694.10
+  }
 }

@@ -184,6 +184,26 @@
   .placeholder h3 { font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 8px; }
   .placeholder p { font-size: 0.82rem; line-height: 1.6; }
 
+  /* ── Registration card strip ── */
+  .reg-strip {
+    background: #1e2a40;
+    padding: 16px 20px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    scrollbar-width: none;
+  }
+  .reg-strip::-webkit-scrollbar { display: none; }
+  .reg-strip .metric-card { min-width: 140px; }
+
+  .val-blue   { color: #3b82f6; }
+  .val-yellow { color: #f59e0b; }
+  .val-green  { color: #4ade80; }
+  .val-red    { color: #f87171; }
+  .val-white  { color: #f1f5f9; }
+
   /* ── Skeleton loader ── */
   .skeleton {
     background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
@@ -237,6 +257,12 @@
   </div>
 
   <div class="metric-card">
+    <div class="metric-label">Apollo Pacing</div>
+    <div class="metric-value" id="apolloPacing"><div class="skeleton"></div></div>
+    <div class="metric-sub">QTD: <strong id="apolloQtd">—</strong> vs <strong id="apolloTarget">—</strong></div>
+  </div>
+
+  <div class="metric-card">
     <div class="metric-label">Monthly Rebate Target</div>
     <div class="metric-value" id="monthlyAOP"><div class="skeleton"></div></div>
     <div class="metric-sub" id="monthlyAOPSub">—</div>
@@ -266,10 +292,7 @@
 <!-- ── Tab panels ── -->
 <div class="panels">
   <div class="panel active" id="panel-registrations">
-    <div class="placeholder">
-      <h3>Registrations</h3>
-      <p>Registration data will appear here once connected to Omni.</p>
-    </div>
+    <div class="reg-strip" id="reg-cards"></div>
   </div>
 
   <div class="panel" id="panel-bookings">
@@ -337,6 +360,12 @@
       badge.className = 'metric-badge ' + cls;
     }
 
+    // Apollo Pacing
+    const apolloPct = d.apolloQtdBookings && d.apolloRebateTargetQ2 ? d.apolloQtdBookings / d.apolloRebateTargetQ2 : null;
+    set('apolloPacing', pct(apolloPct));
+    set('apolloQtd', fmt(d.apolloQtdBookings));
+    set('apolloTarget', fmt(d.apolloRebateTargetQ2));
+
     // 3 — Monthly Rebate Target
     set('monthlyAOP', fmt(d.monthlyRebateTarget));
     set('monthlyAOPSub', d.currentMonth || '');
@@ -355,6 +384,77 @@
     if (el) el.innerHTML = val ?? '—';
   }
 
+  // ── Week helpers ──
+  function getMondayOfWeek(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function toISO(date) {
+    return date.getFullYear() + '-' +
+      String(date.getMonth() + 1).padStart(2, '0') + '-' +
+      String(date.getDate()).padStart(2, '0');
+  }
+
+  function fmtWeekLabel(date) {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+  }
+
+  function fmtDollars(n) {
+    if (n == null || isNaN(n)) return '—';
+    return '$' + (n / 1e6).toFixed(2) + 'M';
+  }
+
+  function fmtPctSigned(n) {
+    if (n == null || isNaN(n)) return '—';
+    return (n >= 0 ? '+' : '') + (n * 100).toFixed(1) + '%';
+  }
+
+  // ── Render registrations tab ──
+  function renderRegistrations(d) {
+    if (!d.registrations) return;
+    const regs = d.registrations;
+
+    const today        = new Date();
+    const curWeekStart = getMondayOfWeek(today);
+    const w1Start      = new Date(curWeekStart); w1Start.setDate(w1Start.getDate() - 7);
+    const w2Start      = new Date(curWeekStart); w2Start.setDate(w2Start.getDate() - 14);
+
+    const findWeek = d => regs.weeks.find(w => w.weekStart === toISO(d)) || null;
+    const wCur = findWeek(curWeekStart);
+    const w1   = findWeek(w1Start);
+    const w2   = findWeek(w2Start);
+
+    const avg2Units   = (w1 && w2) ? Math.round((w1.units + w2.units) / 2) : null;
+    const avg2Dollars = (w1 && w2) ? (w1.dollars + w2.dollars) / 2 : null;
+    const oplanWkly   = regs.apolloOplanQ2 / 13;
+    const vsOplan     = avg2Dollars != null ? (avg2Dollars / oplanWkly) - 1 : null;
+
+    const colorMap = { blue: 'val-blue', yellow: 'val-yellow', green: 'val-green', red: 'val-red', white: 'val-white' };
+
+    const cards = [
+      { label: fmtWeekLabel(w2Start) + ' REGS (UNITS)',   value: w2  ? w2.units.toLocaleString()       : '—', color: 'blue' },
+      { label: fmtWeekLabel(w1Start) + ' REGS (UNITS)',   value: w1  ? w1.units.toLocaleString()       : '—', color: 'blue' },
+      { label: fmtWeekLabel(curWeekStart) + ' REGS (PARTIAL)', value: wCur ? wCur.units.toLocaleString() : '—', color: 'yellow' },
+      { label: '2-WK AVG FULL WEEKS',                     value: avg2Units != null ? avg2Units.toLocaleString() + ' / wk' : '—', color: 'green' },
+      { label: fmtWeekLabel(w2Start) + ' REG DOLLARS',    value: w2  ? fmtDollars(w2.dollars)          : '—', color: 'blue' },
+      { label: fmtWeekLabel(w1Start) + ' REG DOLLARS',    value: w1  ? fmtDollars(w1.dollars)          : '—', color: 'blue' },
+      { label: 'OPLAN WEEKLY PACE',                       value: fmtDollars(oplanWkly) + ' / wk', sub: 'Q2 Target: ' + fmt(regs.apolloRebateTargetQ2), color: 'white' },
+      { label: 'REG VS OPLAN PACE',                       value: fmtPctSigned(vsOplan), color: vsOplan != null && vsOplan >= 0 ? 'green' : 'red' },
+    ];
+
+    document.getElementById('reg-cards').innerHTML = cards.map(c => `
+      <div class="metric-card">
+        <div class="metric-label">${c.label}</div>
+        <div class="metric-value ${colorMap[c.color]}">${c.value}</div>
+        ${c.sub ? `<div class="metric-sub">${c.sub}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
   // ── Refresh ──
   async function refreshData() {
     const btn = document.getElementById('refreshBtn');
@@ -363,6 +463,7 @@
     try {
       const data = await fetchFromOmni();
       renderMetrics(data);
+      renderRegistrations(data);
       document.getElementById('lastUpdated').textContent =
         'Data as of ' + (data.lastFetched || '—');
     } catch (e) {
