@@ -537,7 +537,7 @@
     'Amp Top Box':      '#eab308',
     'Analog Mics':      '#94a3b8',
   };
-  const PL_ORDER = Object.keys(PL_COLORS);
+  const PL_ORDER = Object.keys(PL_COLORS).filter(pl => pl.includes('Apollo'));
 
   let regChartInstance = null;
 
